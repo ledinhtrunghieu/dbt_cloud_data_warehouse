@@ -1,3 +1,5 @@
+{{ config(materialized='table')}}
+
 with p as (
     SELECT
         person_id,

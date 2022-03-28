@@ -35,6 +35,8 @@ models:
   transformed_data_warehouse:
     core:
       materialized: table
+    staging:
+      materialized: view
 
 
 
