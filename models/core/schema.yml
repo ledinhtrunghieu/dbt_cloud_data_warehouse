@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+    - name: raw_data_warehouse
+      database: bachelor-thesis-344103
+      schema: raw_data_warehouse
+    
+      tables:
+        - name: patients
+        - name: encounters
+  
+    - name: transformed_data_warehouse
+      database: bachelor-thesis-344103
+      schema: transformed_data_warehouse
+      tables:
+        - name: concept
+        - name: concept_relationship
