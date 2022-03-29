@@ -30,7 +30,7 @@ FROM(
 					THEN 1
 				ELSE 99
 			END AS PRIORITY
-	FROM {{ ref('assign_all_visits_ids') }}
+	FROM {{ ref('assign_all_visit_ids') }}
 	) T1
 ) T2
 WHERE RN=1

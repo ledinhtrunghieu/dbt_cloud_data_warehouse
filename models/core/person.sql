@@ -26,9 +26,9 @@ SELECT
     when upper(p.race) = 'HISPANIC' then 38003563
     else 0
   end as ethnicity_concept_id,
-  0 as location_id,
+  null as location_id,
   0 as provider_id,
-  0 as care_site_id,
+  null as care_site_id,
   p.id as person_source_value,
   p.gender as gender_source_value,
   0 as gender_source_concept_id,
