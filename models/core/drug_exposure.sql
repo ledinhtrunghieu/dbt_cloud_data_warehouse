@@ -4,16 +4,16 @@ with tmp as (
     select
         p.person_id,
         coalesce(srctostdvm.target_concept_id,0) as drug_concept_id,
-        c.start AS drug_exposure_start_date,
-        c.start AS drug_exposure_start_datetime,
-        coalesce(c.stop,c.start) AS drug_exposure_end_date,
-        coalesce(c.stop,c.start) AS drug_exposure_end_datetime,
-        c.stop AS verbatim_end_date,
+        CAST(c.start AS TIMESTAMP) AS drug_exposure_start_date,
+        CAST(c.start AS TIMESTAMP) AS drug_exposure_start_datetime,
+        coalesce(CAST(c.stop AS TIMESTAMP),CAST(c.start AS TIMESTAMP)) AS drug_exposure_end_date,
+        coalesce(CAST(c.stop AS TIMESTAMP),CAST(c.start AS TIMESTAMP)) AS drug_exposure_end_datetime,
+        CAST(c.stop AS TIMESTAMP) AS verbatim_end_date,
         581452 as drug_type_concept_id,
         null as  stop_reason,
         0 as refills,
         0 as quantity,
-        coalesce(datediff(c.stop,c.start),0) as days_supply,
+        coalesce(date_diff(CAST(c.stop AS TIMESTAMP),CAST(c.start AS TIMESTAMP),DAY),0) as days_supply,
         null as  sig,
         0 as route_concept_id,
         0 as lot_number,
@@ -24,34 +24,34 @@ with tmp as (
         coalesce(srctosrcvm.source_concept_id,0) AS drug_source_concept_id,
         null as  route_source_value,
         null as  dose_unit_source_value
-        from conditions c
-        join source_to_standard_vocab_map   srctostdvm
+        from {{source('raw_data_warehouse','conditions')}} c
+        join {{ref('source_to_standard_vocab_map')}}   srctostdvm
         on srctostdvm.source_code             = c.code
         and srctostdvm.target_domain_id        = 'Drug'
         and srctostdvm.source_vocabulary_id    = 'RxNorm'
         and srctostdvm.target_standard_concept = 'S'
         and (srctostdvm.target_invalid_reason IS NULL OR srctostdvm.target_invalid_reason = '')
-        left join source_to_source_vocab_map srctosrcvm
+        left join {{ref('source_to_source_vocab_map')}} srctosrcvm
         on srctosrcvm.source_code             = c.code
         and srctosrcvm.source_vocabulary_id    = 'RxNorm'
-        left join final_visit_ids fv
+        left join {{ref('final_visit_ids')}} fv
         on fv.encounter_id = c.encounter
-        join person p
+        join {{ref('person')}} p
         on p.person_source_value              = c.patient
         union all
         select
         p.person_id,
         coalesce(srctostdvm.target_concept_id,0) as drug_concept_id,
-        m.start,
-        m.start,
-        coalesce(m.stop,m.start),
-        coalesce(m.stop,m.start),
-        m.stop,
+        CAST(m.start AS TIMESTAMP),
+        CAST(m.start AS TIMESTAMP),
+        coalesce(CAST(m.stop AS TIMESTAMP),CAST(m.start AS TIMESTAMP)),
+        coalesce(CAST(m.stop AS TIMESTAMP),CAST(m.start AS TIMESTAMP)),
+        CAST(m.stop AS TIMESTAMP),
         38000177,
         null,
         0,
         0,
-        coalesce(datediff(m.stop,m.start),0),
+        coalesce(date_diff(CAST(m.stop AS TIMESTAMP),CAST(m.start AS TIMESTAMP),DAY),0),
         null,
         0,
         0,
@@ -62,29 +62,29 @@ with tmp as (
         coalesce(srctosrcvm.source_concept_id,0),
         null,
         null 
-        from medications m
-        join source_to_standard_vocab_map   srctostdvm
+        from {{source('raw_data_warehouse','medications')}} m
+        join {{ref('source_to_standard_vocab_map')}}   srctostdvm
         on srctostdvm.source_code             = m.code
         and srctostdvm.target_domain_id        = 'Drug'
         and srctostdvm.source_vocabulary_id    = 'RxNorm'
         and srctostdvm.target_standard_concept = 'S'
         and (srctostdvm.target_invalid_reason IS  NULL OR srctostdvm.target_invalid_reason = '')
-        left join source_to_source_vocab_map srctosrcvm
+        left join {{ref('source_to_source_vocab_map')}} srctosrcvm
         on srctosrcvm.source_code             = m.code
         and srctosrcvm.source_vocabulary_id    = 'RxNorm'
-        left join final_visit_ids fv
+        left join {{ref('final_visit_ids')}} fv
         on fv.encounter_id = m.encounter
-        join person p
+        join {{ref('person')}} p
         on p.person_source_value              = m.patient
         union all
         select
         p.person_id,
         coalesce(srctostdvm.target_concept_id,0) as drug_concept_id,
-        i.date,
-        i.date,
-        i.date,
-        i.date,
-        i.date,
+        CAST(i.date as TIMESTAMP),
+        CAST(i.date as TIMESTAMP),
+        CAST(i.date as TIMESTAMP),
+        CAST(i.date as TIMESTAMP),
+        CAST(i.date as TIMESTAMP),
         581452,
         null,
         0,
@@ -100,19 +100,19 @@ with tmp as (
         coalesce(srctosrcvm.source_concept_id,0),
         null,
         null
-        from immunizations i
-        left join source_to_standard_vocab_map   srctostdvm
+        from {{source('raw_data_warehouse','immunizations')}} i
+        left join {{ref('source_to_standard_vocab_map')}}   srctostdvm
         on srctostdvm.source_code             = i.code
         and srctostdvm.target_domain_id        = 'Drug'
         and srctostdvm.source_vocabulary_id    = 'CVX'
         and srctostdvm.target_standard_concept = 'S'
         and (srctostdvm.target_invalid_reason IS NULL OR srctostdvm.target_invalid_reason = '')
-        left join source_to_source_vocab_map srctosrcvm
+        left join {{ref('source_to_source_vocab_map')}} srctosrcvm
         on srctosrcvm.source_code             = i.code
         and srctosrcvm.source_vocabulary_id    = 'CVX'
-        left join final_visit_ids fv
+        left join {{ref('final_visit_ids')}} fv
         on fv.encounter_id = i.encounter
-        join person p
+        join {{ref('person')}} p
         on p.person_source_value              = i.patient
 )
 SELECT  row_number()over(order by person_id) AS drug_exposure_id,

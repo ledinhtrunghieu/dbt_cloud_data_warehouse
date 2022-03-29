@@ -11,6 +11,8 @@ sources:
         - name: conditions
         - name: procedures
         - name: observations
+        - name: medications
+        - name: immunizations
   
     - name: transformed_data_warehouse
       database: bachelor-thesis-344103
