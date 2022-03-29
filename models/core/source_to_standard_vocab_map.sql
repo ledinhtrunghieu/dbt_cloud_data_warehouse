@@ -1,3 +1,5 @@
+{{ config(materialized='table')}}
+
 select
     c.concept_code AS source_code,
     c.concept_id AS source_concept_id,
